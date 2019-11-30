@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            canvas {
+                border: 1px solid blue;
+            }
+        </style>
+
+    </head>
+
+    <body>
+
+        <div style="text-align: center">
+            <canvas id="bunnyCanvas" width="500" height="500" ></canvas>
+        </div>
+        <script>
+        var canvas = document.getElementById("bunnyCanvas"),
+                ctx = canvas.getContext("2d");
+
+        //Define resorce
+        var  characterOne = new Image(),
+                characterTwo = new Image(),
+                characterThree = new Image(),
+                characterFour = new Image(),
+                background = new Image(),
+                food = new Image(),
+                uwfood = new Image(),
+                bbom = new Image();
+                tile = new Image(),
+                blood = new Image(),
+                heart = new Image();
+                var soundgame=true;
+                var bgsound = new Audio("resource/smash.mp3");
+                var eatt = new Audio("resource/eat.mp3");
+                var gameoverr = new Audio("resource/gameover.mp3");
+                var h = new Audio("resource/UNADA.mp3");
+                var Sync24 = new Audio("resource/Sync24Replicant.mp3");
+                var boom = new Audio("resource/boom.mp3");
+                var tilesond = new Audio("resource/boom.mp3");
+
+
+        // Gloabl variables
+        var score = 0,
+        die = 0,
+        hert=3,
+        level = 100,
+        animation = 0,
+        foodTime = 1,
+        foodList = [],
+        foodDrop = [0, 50, 100, 150, 200, 250, 300, 350, 400, 450],
+        bbomDrop = [0, 100,300, 450],
+        Btimer = 0,
+        bombList = [],
+        bbomTime = 0,
+        bbomList = [],
+        speed = 0,
+        onAir = false,
+        gameover = false,
+        width = canvas.width,
+        height = canvas.height,
+        tileList = [];
+
+        // create objects
+        var characterObj = {
+            width: 100,
+            height: 200,
+            leftArrow: false,
+            rightArrow: false,
+            x: 100,
+            y: 350,
+            jumb: 0,
+            jumbUnit: 5,
+            safe: true,
+            gravity: 10
+        };
+        var tileObj = {
+            width: 50,
+            height: 30
+        };
+        var foodObj = {
+            width: 50,
+            height: 50,
+            speed: 1
+        };
+        var bombObj = {
+            width: 50,
+            height: 50,
+            speed: 1
+        };
+          var bbomObj = {
+            width: 50,
+            height: 50,
+            speed: 1
+        };
+
+
+        // load resource
+          background.onload = function () {
+            uwfood.onload = function () {
+              bbom.onload = function () {
+                heart.onload = function () {
+                  tile.onload = function () {
+                    blood.onload = function () {
+                      food.onload = function () {
+                        characterOne.onload = function () {
+                          characterTwo.onload = function () {
+                            characterThree.onload = function () {
+                              characterFour.onload = function () {
+                                    // TO START GAME
+                                      ctx.drawImage(background, 0, 0, width, height);
+                                      ctx.font = "30px Arial";
+                                      ctx.strokeText("Click Here to Start", 120, 250);
+                                      document.getElementById("bunnyCanvas").onmousedown = function () {
+                                            if (!gameover) {
+                                                clearInterval();
+                                                }
+                                                startGame();
+                                                }
+
+                                                // draw images function
+                                                drawImage = function (object, x, y, width, height) {
+                                                    ctx.drawImage(object, x, y, width, height);
+                                                };
+
+
+                                                document.onkeyup = function (code) {
+                                                    if (code.keyCode === 37) {
+                                                        characterObj.leftPressed = false;
+                                                    }
+                                                    if (code.keyCode === 39) {
+                                                        characterObj.rightPressed = false;
+                                                    }
+                                                };
+
+                                                // collision functions
+                                                food_character_collision = function (f) {
+                                                    return ((f.x < characterObj.x + characterObj.width) &&
+                                                            (characterObj.x < f.x + foodObj.width) &&
+                                                            (f.y < characterObj.y + characterObj.height) &&
+                                                            (characterObj.y < f.y + foodObj.height));
+                                                }
+
+                                                food_tile_collision = function (f, t) {
+                                                    return ((f.x < t.x + tileObj.width) &&
+                                                            (t.x < f.x + foodObj.width) &&
+                                                            (f.y < t.y + tileObj.height) &&
+                                                            (t.y < f.y + foodObj.height));
+                                                }
+
+
+                                                 bbom_character_collision = function (f) {
+                                                    return ((f.x < bbomObj.x + bbomObj.width) &&
+                                                            (bbomObj.x < f.x + characterObj.width) &&
+                                                            (f.y < bbomObj.y + bbomObj.height) &&
+                                                            (bbomObj.y < f.y + characterObj.height));
+                                                }
+
+
+                                                bomb_character_collision = function (f) {
+                                                    return ((f.x < bombObj.x + bombObj.width) &&
+                                                            (bombObj.x < f.x + characterObj.width) &&
+                                                            (f.y < bombObj.y + bombObj.height) &&
+                                                            (bombObj.y < f.y + characterObj.height));
+                                                }
+
+                                                character_tile_collision = function (t) {
+                                                    return (characterObj.x <= t.x + tileObj.width) &&
+                                                            (t.x <= characterObj.x + characterObj.width) &&
+                                                            (t.y >= characterObj.y + characterObj.height);
+                                                }
+
+
+                                                // moving
+                                                document.onkeydown = function (code) {
+                                                    if (code.keyCode === 37 && characterObj.x > 0) {
+                                                        characterObj.speed = -5;
+                                                        characterObj.leftPressed = true;
+                                                    }
+                                                    if (code.keyCode === 39 && characterObj.x < 500 - characterObj.width) {
+                                                        characterObj.speed = 5;
+                                                        characterObj.rightPressed = true;
+                                                    }
+                                                    if (code.keyCode === 38 && !characterObj.onAir && characterObj.y === 350) {
+                                                        h.play();
+
+                                                        characterObj.jumb = 100;
+                                                        characterObj.onAir = true;
+                                                    }
+                                                };
+
+                                                // jumbing
+                                                jumb = function () {
+                                                    // jumbing_up
+                                                    if (characterObj.jumb > 0 && characterObj.onAir) {
+                                                        characterObj.y -= characterObj.jumbUnit;
+                                                        characterObj.jumb -= characterObj.jumbUnit;
+                                                    }
+                                                    // jumbing_down
+                                                    if (characterObj.jumb <= 0 && characterObj.onAir) {
+                                                        characterObj.y += characterObj.jumbUnit;
+                                                        characterObj.jumb -= characterObj.jumbUnit;
+                                                    }
+                                                    // reset on air
+                                                    if (characterObj.jumb <= -100 && characterObj.onAir) {
+                                                        characterObj.onAir = false;
+                                                    }
+                                                };
+
+                                                updateFoodPosition = function () {
+                                                    for (var i in foodList) {
+                                                        foodList[i].y += foodObj.speed;
+                                                    }
+                                                };
+
+                                                updateBombPosition = function () {
+                                                    for (var i in bombList) {
+                                                        bombList[i].y += bombObj.speed;
+                                                    }
+                                                };
+
+                                                   updatebbommPosition = function () {
+                                                    for (var i in bbomList) {
+                                                        bbomList[i].y += bbomObj.speed;
+                                                    }
+                                                };
+
+                                                updateCharacterPosition = function () {
+                                                    if (characterObj.leftPressed && characterObj.x > 0) {
+                                                        characterObj.x += characterObj.speed;
+                                                    }
+                                                    if (characterObj.rightPressed && characterObj.x < 500 - characterObj.width) {
+                                                        characterObj.x += characterObj.speed;
+
+                                                    }
+
+                                                    // make sure the charater visible when splice() a tiles
+                                                    if (characterObj.y > 450) {
+                                                        characterObj.y = 450;
+                                                        gameover = true;
+                                                    }
+                                                };
+                                                The_end = function () {
+                                                    ctx.globalAlpha = 0.6;
+                                                    //Game Over when fall character
+                                                    drawImage(blood, 100, 100, 300, 300);
+                                                    ctx.globalAlpha = 1.0;
+                                                    ctx.font = "20px Calibri";
+                                                    ctx.strokeText("Game Over", 200, 250);
+                                                    ctx.strokeText("Click to Restart", 200, 275);
+                                                    clearInterval(intervalVar);
+                                                    ctx.globalAlpha = 1.0;
+                                                }
+                                                    //pausd game and continue
+                                                     pause = function () {
+                                                    ctx.font = "30px Calibri";
+                                                    ctx.strokeText("Click to Continue", 150, 275);
+                                                    clearInterval(intervalVar);
+                                                    ctx.globalAlpha = 1.0;
+                                                    Sync24.pause();
+                                                }
+                                                //End pausd game and continue
+
+                                                // call draw images function
+                                                updateCanvas = function () {
+                                                    ctx.clearRect(0, 0, width, height);
+                                                    drawImage(background, 0, 0, width, height);
+                                                    foodTime++;
+                                                    if (foodTime > level) {
+                                                        foodList.push({
+                                                            x: foodDrop[Math.round(Math.random() * 9)],
+                                                            y: 0
+                                                        });
+                                                        foodTime = 0;
+                                                    }
+                                                    // call draw images unwantedFood function
+                                                    Btimer+3;
+                                                    if (Btimer > level) {
+                                                        bombList.push({
+                                                            x: bombDrop[Math.round(Math.random() * 6)],
+                                                            y: 0
+                                                        });
+                                                        Btimer = 0;
+                                                    }
+                                                    // call draw images boom function
+                                                      bbomTime++;
+                                                    if (bbomTime > level) {
+                                                        bbomList.push({
+                                                            x: bbomDrop[Math.round(Math.random() * 6)],
+                                                            y: 0
+                                                        });
+                                                        bbomTime = 0;
+                                                    }
+                                                    // call draw images gameover character
+                                                    if (gameover) {
+                                                        drawImage(characterThree, characterObj.x, 470, 50, 30);
+                                                        The_end();
+                                                        Sync24.pause();
+                                                        gameoverr.play();
+
+                                                    } else if (characterObj.onAir) {
+                                                        drawImage(characterFour, characterObj.x, characterObj.y, characterObj.width, characterObj.height);
+                                                    }
+                                                    // draw two character
+                                                    else if (animation == 0) {
+                                                        drawImage(characterTwo, characterObj.x, characterObj.y, characterObj.width, characterObj.height);
+                                                        animation = 1;
+                                                    } else {
+                                                        drawImage(characterOne, characterObj.x, characterObj.y, characterObj.width, characterObj.height);
+                                                        animation = 0;
+                                                    }
+                                                    for (var i in bombList) {
+                                                        drawImage(uwfood, bombList[i].x, bombList[i].y, bombObj.width, bombObj.height);
+                                                    }
+                                                    for (var i in foodList) {
+                                                        drawImage(food, foodList[i].x, foodList[i].y, foodObj.width, foodObj.height);
+                                                    }
+                                                        for (var i in bbomList) {
+                                                        drawImage(bbom, bbomList[i].x, bbomList[i].y, bbomObj.width, bbomObj.height);
+                                                    }
+                                                    for (var i = 0; i < tileList.length; i++) {
+                                                        drawImage(tile, tileList[i].x, tileList[i].y, tileObj.width, tileObj.height);
+                                                    }
+                                                    // for check the collisions
+                                                    for (var i in foodList) {
+                                                        if (food_character_collision(foodList[i])) {
+                                                            score++;
+                                                            eatt.play();
+                                                            foodList.splice(i, 1);
+                                                            if (score % 2==0) {
+                                                                level--;
+                                                            }
+
+                                                        }
+                                                    }
+
+                                                    for (var i in foodList) {
+                                                        for (var e in tileList) {
+                                                            if (food_tile_collision(foodList[i], tileList[e])) {
+                                                                tileList.splice(e, 1);
+                                                                tilesond.play();
+                                                            }
+                                                        }
+                                                    }
+
+                                                    for (var i in bombList) {
+                                                        if (food_character_collision(bombList[i])) {
+                                                            bombList.splice(i, 1);
+                                                            unwantfood.play();
+                                                              score--;
+                                                        }else if(score==-1){
+                                                        The_end();
+                                                         gameoverr.play();
+                                                         Sync24.pause();
+                                                        }
+
+                                                    }
+                                                    //decrase the life when collision boom in charecter
+                                                         for (var i in bbomList) {
+                                                        if (food_character_collision(bbomList[i])) {
+                                                            bbomList.splice(i, 1);
+                                                              die++;
+                                                              boom.play();
+                                                                }else if(die==1){
+                                                                }else if(die==2){
+                                                                }else if(die==3){
+                                                                hert--;
+                                                               The_end();
+                                                                gameoverr.play();
+                                                                Sync24.pause();
+
+                                                              }
+                                                            }
+
+
+                                                    for (var i in bombList) {
+                                                        for (var f in characterObj) {
+                                                            if (food_tile_collision(bombList[i], characterObj[f])) {
+                                                                bombList.splice(f, 1);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    // gravity
+                                                    if (!characterObj.onAir) {
+                                                        for (var e in tileList) {
+                                                            if (character_tile_collision(tileList[e])) {
+                                                                characterObj.safe = true;
+                                                                break;
+                                                            } else {
+                                                                characterObj.safe = false;
+                                                            }
+                                                        }
+                                                        if (!characterObj.safe) {
+                                                            characterObj.y += characterObj.gravity;
+                                                        }
+
+                                                    }
+                                                    //draw image in header game
+                                                    drawImage(bbom, 260, 20, 30, 30);
+                                                    drawImage(heart,130, 20, 40, 30);
+                                                    drawImage(food, 430, 10, 30, 30);
+                                                    ctx.font = "20px Calibri";
+                                                    ctx.fillText(score, 470, 33);
+                                                     ctx.fillText(die,300 , 40);
+                                                      ctx.fillText(hert,170 , 40);
+                                                    ctx.fillText("level :" + (100 - level + 1), 20, 33)
+
+                                                    updateFoodPosition();
+                                                    updateBombPosition();
+                                                    updatebbommPosition();
+                                                    updateCharacterPosition();
+                                                    jumb();
+                                                };
+                                                // main function
+                                                startGame = function () {
+                                                    Sync24.play() ;
+                                                    score = 0;
+                                                    die=0;
+                                                    hert=3;
+                                                    foodList = [];
+                                                    anmation = 0;
+                                                    foodTime = 0;
+                                                    level = 100;
+                                                    titleList = [];
+                                                    gameover = false;
+                                                    characterObj.x = 50;
+                                                    characterObj.y = 350;
+                                                    characterObj.width = 30;
+                                                    characterObj.height = 50;
+                                                    characterObj.safe = true;
+                                                    characterObj.leftPressed = false;
+                                                    characterObj.rightPressed = false;
+                                                    characterObj.onAir = false;
+
+                                                    // insert objects into list
+                                                    for (var i = 0; i <= 9; i++) {
+                                                        tileList.push({
+                                                            x: i * 50,
+                                                            y: 400
+                                                        });
+                                                    }
+                                                    intervalVar = setInterval(updateCanvas, 10);
+                                                }
+                                            }
+                                            characterFour.src = "images/Bunny4.png";
+
+                                        };
+                                        characterThree.src = "images/Bunny3.png";
+
+                                    };
+                                    characterTwo.src = "images/Bunny2.png";
+
+                                };
+                                characterOne.src = "images/Bunny1.png";
+
+                            };
+                            food.src = "images/food.png";
+
+                        };
+                        blood.src = "images/blood.png";
+
+                    };
+                    tile.src = "images/tiles.png";
+
+                };
+                heart.src = "images/heart.png";
+
+            };
+            bbom.src = "images/bbom.png";
+
+         };
+        uwfood.src = "images/bomb.png";
+
+      };
+      background.src = "images/background.jpg";
+
+</script>
+      <center>
+          <button onclick="pause()">Press to PAUSE</button>
+      </center>
+    </body>
+</html>
