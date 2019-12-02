@@ -18,12 +18,15 @@
             <canvas id="bunnyCanvas" width="500" height="500" ></canvas>
         </div>
         
-        <img id="image" src="https://marketplace.canva.com/MADatBvfgn8/1/thumbnail_large-1/canva-blue-wooden-texture-background-MADatBvfgn8.jpg" width="500" height="500">
-        
+        <img id="image01" src="https://marketplace.canva.com/MADatBvfgn8/1/thumbnail_large-1/canva-blue-wooden-texture-background-MADatBvfgn8.jpg" width="500" height="500">
+
         <script>
         var canvas = document.getElementById("bunnyCanvas"),
-                ctx = canvas.getContext("2d");
+                ctx = canvas.getContext("2d"),
+                img = document.getElementById("image01"),
+                ctx.drawImage(img, 0, 0, 500, 500);
 
+/*
         //Define resorce
         var  characterOne = new Image(),
                 characterTwo = new Image(),
@@ -482,7 +485,7 @@
       background.src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFPVuLjIzwqv8lQRRiRnMJgnAQdePXiZqzOBBVsulrJc8tdzPK&s";
 
     document.getElementById("image").src = "https://marketplace.canva.com/MADatBvfgn8/1/thumbnail_large-1/canva-blue-wooden-texture-background-MADatBvfgn8.jpg";
-    
+    */
 </script>
     
       <center>
